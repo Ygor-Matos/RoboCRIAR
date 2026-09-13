@@ -7,3 +7,43 @@
 # TODO: implemente aqui. ComandoColeta(Comando): __init__(codinome, posicao,
 # quantidade), com .executar(robo) e .desfazer(robo) (remove o item da
 # bandeja, decrementa a contagem coletada).
+
+
+from celular_robo.comandos_base import Comando
+
+
+class ComandoColeta(Comando):
+    def __init__(self,codinome, posicao,quantidade ):
+        super().__init__()
+        self.codinome = codinome
+        self.posicao = posicao
+        self.quantidade = quantidade
+
+
+    def executar(self, robo):
+        if robo.posicao != self.posicao:
+            raise ValueError(
+                f"Robo esta em {robo.posicao}, "
+                f"mas o item esta em {self.posicao}"
+            )
+        robo.coletar(self.codinome, self.quantidade)
+        robo._historico_comandos.append(self)
+
+    
+    def desfazer(self, robo):
+        robo.desfazer_coleta(
+            self.codinome,
+            self.quantidade
+        )
+        
+        if robo._historico_comandos and robo._historico_comandos[-1] is self:
+            robo._historico_comandos.pop()
+
+    def __repr__(self):
+        return (
+            f"ComandoColeta("
+            f"{self.codinome!r}, "
+            f"{self.posicao!r}, "
+            f"{self.quantidade})"
+        )
+
