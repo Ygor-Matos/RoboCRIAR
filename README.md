@@ -13,6 +13,9 @@ TODO: como rodar a CLI e como rodar `pytest -v`.
 TODO: decisões de design tomadas — em especial onde havia mais de um jeito
 razoável de resolver (ex.: qual exceção recusa o conflito `fragil`+`urgente`,
 Seção 2.4 do enunciado).
+### Bandeja:
+A bandeja será implementada como uma classe própria que pertence a RoboColetor
+
 
 ## Mapeamento pra aulas da disciplina
 
