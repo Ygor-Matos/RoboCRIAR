@@ -1,49 +1,70 @@
-# Command — ComandoColeta — enunciado, Seção 2.3.
-#
-# Herde de `Comando` (comandos_base.py — ABC com registro automático):
-#
-#   from celular_robo.comandos_base import Comando
-#
-# TODO: implemente aqui. ComandoColeta(Comando): __init__(codinome, posicao,
-# quantidade), com .executar(robo) e .desfazer(robo) (remove o item da
-# bandeja, decrementa a contagem coletada).
-
-
 from celular_robo.comandos_base import Comando
 
 
 class ComandoColeta(Comando):
-    def __init__(self,codinome, posicao,quantidade ):
-        super().__init__()
+    def __init__(
+        self,
+        codinome,
+        posicao,
+        quantidade,
+    ):
         self.codinome = codinome
-        self.posicao = posicao
+        self.posicao = tuple(posicao)
         self.quantidade = quantidade
-
+        self._executado = False
 
     def executar(self, robo):
-        if robo.posicao != self.posicao:
-            raise ValueError(
-                f"Robo esta em {robo.posicao}, "
-                f"mas o item esta em {self.posicao}"
-            )
-        robo.coletar(self.codinome, self.quantidade)
-        robo._historico_comandos.append(self)
-
-    
-    def desfazer(self, robo):
-        robo.desfazer_coleta(
-            self.codinome,
-            self.quantidade
+        chegou = robo.estrategia.mover(
+            robo,
+            self.posicao,
         )
-        
-        if robo._historico_comandos and robo._historico_comandos[-1] is self:
-            robo._historico_comandos.pop()
+
+        if not chegou:
+            raise RuntimeError(
+                f"Não foi possível chegar ao item "
+                f"{self.codinome}."
+            )
+
+        robo.bandeja.adicionar(
+            self.codinome,
+            self.quantidade,
+            self.quantidade,
+        )
+
+        self._executado = True
+
+        robo.notificar(
+            "coleta",
+            codinome=self.codinome,
+            posicao=self.posicao,
+            quantidade=self.quantidade,
+        )
+
+        robo.verificar_bandeja()
+
+    def desfazer(self, robo):
+        if not self._executado:
+            return
+
+        robo.bandeja.remover(
+            self.codinome,
+            self.quantidade,
+        )
+
+        self._executado = False
+
+        robo.notificar(
+            "coleta_desfeita",
+            codinome=self.codinome,
+            posicao=self.posicao,
+            quantidade=self.quantidade,
+        )
 
     def __repr__(self):
         return (
             f"ComandoColeta("
             f"{self.codinome!r}, "
-            f"{self.posicao!r}, "
-            f"{self.quantidade})"
+            f"posicao={self.posicao}, "
+            f"quantidade={self.quantidade}"
+            f")"
         )
-
